@@ -7,12 +7,22 @@ import {
   StackProps,
 } from 'aws-cdk-lib';
 import {
+  Certificate,
+  CertificateValidation,
+} from 'aws-cdk-lib/aws-certificatemanager';
+import {
   Distribution,
   S3OriginAccessControl,
   Signing,
   ViewerProtocolPolicy,
 } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import {
+  ARecord,
+  PublicHostedZone,
+  RecordTarget,
+} from 'aws-cdk-lib/aws-route53';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { execSync, ExecSyncOptions } from 'child_process';
@@ -63,24 +73,20 @@ export class FlightcheckCloudStack extends Stack {
       },
     });
 
-    // const domainName = 'mattmorgan.cloud';
+    const domainName = 'flightcheck.cloud';
 
-    // const hostedZone = PublicHostedZone.fromLookup(this, 'HostedZone', {
-    //   domainName,
-    //   privateZone: false,
-    // });
+    const hostedZone = PublicHostedZone.fromLookup(this, 'HostedZone', {
+      domainName,
+      privateZone: false,
+    });
 
-    // const certificate = new Certificate(this, 'WebsiteCert', {
-    //   domainName,
-    //   subjectAlternativeNames: [
-    //     'analytics.mattmorgan.cloud',
-    //     'login.analytics.mattmorgan.cloud',
-    //   ],
-    //   validation: CertificateValidation.fromDns(hostedZone),
-    // });
+    const certificate = new Certificate(this, 'WebsiteCert', {
+      domainName,
+      validation: CertificateValidation.fromDns(hostedZone),
+    });
 
     const distribution = new Distribution(this, 'Distribution', {
-      // certificate,
+      certificate,
       defaultBehavior: {
         origin: S3BucketOrigin.withOriginAccessControl(websiteBucket, {
           originAccessControl,
@@ -88,10 +94,10 @@ export class FlightcheckCloudStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       defaultRootObject: 'index.html',
-      // domainNames: [domainName],
+      domainNames: [domainName],
       errorResponses: [
         {
-          httpStatus: 404,
+          httpStatus: 403,
           responseHttpStatus: 200,
           responsePagePath: '/index.html',
         },
@@ -104,11 +110,11 @@ export class FlightcheckCloudStack extends Stack {
       sources: [bundle],
     });
 
-    // new ARecord(this, 'ARecord', {
-    //   zone: hostedZone,
-    //   recordName: domainName,
-    //   target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
-    // });
+    new ARecord(this, 'ARecord', {
+      zone: hostedZone,
+      recordName: domainName,
+      target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+    });
 
     new CfnOutput(this, 'webUrl', {
       value: `https://${distribution.domainName}`,
