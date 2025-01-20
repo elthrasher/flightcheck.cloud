@@ -1,14 +1,27 @@
 import './App.css';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { AwsServiceSelector } from './components/aws-service-selector';
 import { ServiceDetails } from './components/service-details';
 import { ThemeProvider } from './components/theme-provider';
 import { ModeToggle } from './components/mode-toggle';
 
-function App() {
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+const App = () => {
+  const location = useMemo(() => new URL(window.location.href), []);
+  const path = location.pathname.split('/')[1];
+  console.log(path);
+
+  const [selectedService, setSelectedService] = useState<string | null>(path);
+  useEffect(() => {
+    if (selectedService) {
+      location.pathname = `/${selectedService}`;
+      window.history.pushState({}, '', location.toString());
+    } else {
+      location.pathname = '/';
+      window.history.pushState({}, '', location.toString());
+    }
+  }, [location, selectedService]);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -38,6 +51,6 @@ function App() {
       </div>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

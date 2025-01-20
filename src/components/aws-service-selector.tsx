@@ -1,7 +1,7 @@
 import { Button } from './ui/button';
 
 interface AwsService {
-  id: string;
+  id: 'lambda' | 's3' | 'dynamodb' | 'sqs' | 'api-gateway' | 'cloudfront';
   name: string;
   icon: string;
   description: string;

@@ -171,7 +171,14 @@ export function ServiceDetails({ serviceId, onBack }: ServiceDetailsProps) {
   const service = serviceDetails[serviceId];
 
   if (!service) {
-    return <div>Service not found</div>;
+    return (
+      <>
+        <div>Service not found</div>{' '}
+        <Button variant="ghost" onClick={onBack}>
+          ← Back to services
+        </Button>
+      </>
+    );
   }
 
   return (
