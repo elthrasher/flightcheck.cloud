@@ -1,5 +1,6 @@
 import {
   AssetHashType,
+  CfnOutput,
   DockerImage,
   RemovalPolicy,
   Stack,
@@ -100,7 +101,6 @@ export class FlightcheckCloudStack extends Stack {
     new BucketDeployment(this, 'DeployWebsite', {
       destinationBucket: websiteBucket,
       distribution,
-      distributionPaths: ['/*'],
       sources: [bundle],
     });
 
@@ -110,6 +110,8 @@ export class FlightcheckCloudStack extends Stack {
     //   target: RecordTarget.fromAlias(new CloudFrontTarget(distribution)),
     // });
 
-    // new CfnOutput(this, 'webUrl', { value: domainName });
+    new CfnOutput(this, 'webUrl', {
+      value: `https://${distribution.domainName}`,
+    });
   }
 }
