@@ -1,6 +1,6 @@
 const InvocationTakeaways = {
   description: (
-    <ul className="list-disc">
+    <ul className="list-disc pl-3">
       <li>Know your invocation method</li>
       <li>
         Different invocation methods require different error-handling strategies
